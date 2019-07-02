@@ -1,8 +1,11 @@
 package edu.cnm.deepdive.demo.at_the_movies.model.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.net.URI;
 import java.util.Date;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -14,10 +17,19 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityLinks;
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Entity
+@Component
+@JsonIgnoreProperties(value = {"id","created","updated","href"},
+    allowGetters = true, ignoreUnknown = true)
+
 public class Movie {
+
+  private static EntityLinks entityLinks;
 
   @Id
   @GeneratedValue(generator = "uuid2")
@@ -77,6 +89,20 @@ public class Movie {
 
   public void setGenre(Genre genre) {
     this.genre = genre;
+  }
+
+  public URI getHref() {
+    return entityLinks.linkForSingleResource(Movie.class, id).toUri();
+  }
+
+  @PostConstruct
+  private void init() {
+    String ignore = entityLinks.toString();
+  }
+
+  @Autowired
+  private void setEntityLinks(EntityLinks entityLinks) {
+    Movie.entityLinks = entityLinks;
   }
 
   public enum Genre {
